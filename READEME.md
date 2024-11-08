@@ -20,18 +20,23 @@ To set up BlogApp locally:
    git clone https://github.com/Arfa-zaffar-khan/MindMatter.git
 
 2. **Create Python Enviorment in Local Repository**:
+    ```bash
     python -m venv myenv
 
 3. **Activate Python Enviorment**: 
+    ```bash
     myenv/scripts/activate
 
-4. **Install All Dependencies in Your Local Enviorment Using requirement.txt file**:
+4. **Install All Dependencies in Your Local Enviorment Using requirement.txt File**:
+    ```bash
     pip install -r requirement.txt
 
 5. **Change Working Folder Mindmatter to src**:
+    ```bash
     cd src
 
 6.**Create .evn File in src Folder Add Variables Like**:
+    ```bash
     SECRET_KEY=
     DEBUG=
     NAME=
