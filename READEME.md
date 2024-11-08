@@ -35,8 +35,8 @@ To set up BlogApp locally:
     ```bash
     cd src
 
-6.**Create .evn File in src Folder Add Variables Like**:
-    ```bash
+6. **Create a `.env` file in the `src` folder and add the following variables**:
+    ```plaintext
     SECRET_KEY=
     DEBUG=
     NAME=
