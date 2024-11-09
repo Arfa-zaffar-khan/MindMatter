@@ -45,3 +45,10 @@ To set up BlogApp locally:
     PORT=
     HOST=
 
+7. **Create Workspace And Import Collection Which I Have Shared With You in Postman**
+    ```plaintext
+    1.click on import
+    2.select file which i have shared with you 
+    3.create enviorment 
+    4.add devurl variable
+    
