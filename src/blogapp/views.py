@@ -1,54 +1,47 @@
-from django.http import JsonResponse
-import json
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-
-blogs = {
-    1: {
-        "id": 1,
-        "title": "python",
-        "description": "python is high level programming language which is use for genral purpous",
-    },
-    2: {
-        "id": 2,
-        "title": "java",
-        "description": "java is based on oops and it is high level programming language ",
-    },
-}
-
+from .models import *
+from .serializers import BlogSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 @csrf_exempt
 @api_view(["GET", "POST"])
 def createAndGetAllBlogs(request):
     if request.method == "GET":
-        return JsonResponse({"blogs": list(blogs.values())}, safe=False)
+        blogs=Blog.objects.all().values()
+        serializer=BlogSerializer(blogs,many=True)
+        return Response({"blogs": serializer.data})
+    
     elif request.method == "POST":
-        data = json.loads(request.body)
-        new_id = max(blogs.keys()) + 1
-        new_blog = {
-            "id": new_id,
-            "title": data.get("title"),
-            "description": data.get("description"),
-        }
-        blogs[new_id] = new_blog
-        return JsonResponse(
-            {"message": "Blog Created Successfully", "blog": new_blog}, status=201
+        serializer=BlogSerializer(data=request.data)
+        if(serializer.is_valid()):
+            serializer.save()
+            return Response(
+            {"message": "Blog Created Successfully", "blogs": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "PUT", "DELETE"])
 def getUpdateDeleteBlog(request, id):
-    blog = blogs.get(id)
+    try:
+        blog = Blog.objects.get(id=id)
+    except Blog.DoesNotExist:
+        return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     if request.method == "GET":
-        return JsonResponse({"blog": blog})
+        serializer=BlogSerializer(blog)
+        return Response({"blog": serializer.data})
 
     elif request.method == "PUT":
-        data = json.loads(request.body)
-        blog.update(
-            {"title": data.get("title"), "description": data.get("description")}
-        )
-        return JsonResponse({"message": "Blog updated successfully", "blog": blog})
+        serializer = BlogSerializer(blog, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Blog updated successfully", "blog": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == "DELETE":
-        del blogs[id]
-        return JsonResponse({"message": "Blog deleted successfully"}, status=204)
+        blog.delete()
+        return Response({"message": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
