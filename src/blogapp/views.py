@@ -4,16 +4,15 @@ from .models import *
 from .serializers import BlogSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 
-@csrf_exempt
-@api_view(["GET", "POST"])
-def createAndGetAllBlogs(request):
-    if request.method == "GET":
+class CreateAndGetAllBlogs(APIView):
+    def get(self,request):
         blogs=Blog.objects.all().values()
         serializer=BlogSerializer(blogs,many=True)
         return Response({"blogs": serializer.data})
     
-    elif request.method == "POST":
+    def post(self,request):
         serializer=BlogSerializer(data=request.data)
         if(serializer.is_valid()):
             serializer.save()
@@ -24,24 +23,39 @@ def createAndGetAllBlogs(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET", "PUT", "DELETE"])
-def getUpdateDeleteBlog(request, id):
-    try:
-        blog = Blog.objects.get(id=id)
-    except Blog.DoesNotExist:
-        return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == "GET":
+class GetUpdateDeleteBlog(APIView):
+    def getBlog(self,id):
+        try:
+            return Blog.objects.get(id=id)
+        except Blog.DoesNotExist:
+            return None
+        
+    def get(self,request,id):
+        blog=self.getBlog(id)
+        if(blog is None):
+            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer=BlogSerializer(blog)
         return Response({"blog": serializer.data})
-
-    elif request.method == "PUT":
+    
+    def put(self,request,id):
+        blog=self.getBlog(id)
+        if(blog is None):
+            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = BlogSerializer(blog, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Blog updated successfully", "blog": serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == "DELETE":
+    
+    def delete(self,request,id):
+        blog=self.getBlog(id)
+        if(blog is None):
+            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
         blog.delete()
         return Response({"message": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+   
+    
+  
