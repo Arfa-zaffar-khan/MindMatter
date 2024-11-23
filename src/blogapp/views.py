@@ -5,57 +5,41 @@ from .serializers import BlogSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-
-class CreateAndGetAllBlogs(APIView):
-    def get(self,request):
-        blogs=Blog.objects.all().values()
-        serializer=BlogSerializer(blogs,many=True)
-        return Response({"blogs": serializer.data})
-    
-    def post(self,request):
-        serializer=BlogSerializer(data=request.data)
-        if(serializer.is_valid()):
-            serializer.save()
-            return Response(
-            {"message": "Blog Created Successfully", "blogs": serializer.data}, status=status.HTTP_201_CREATED
-        )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView,ListAPIView,CreateAPIView,RetrieveAPIView
 
 
-class GetUpdateDeleteBlog(APIView):
-    def getBlog(self,id):
-        try:
-            return Blog.objects.get(id=id)
-        except Blog.DoesNotExist:
-            return None
+class CreateAndGetAllBlogs(ListCreateAPIView):
+    queryset=Blog.objects.all()
+    serializer_class=BlogSerializer
+
+  
+class GetUpdateDeleteBlog(RetrieveUpdateDestroyAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+
+    def perform_update(self, serializer):
+        # Retrieve the existing instance before updating
+        blog = self.get_object()
+        old_image = blog.image  # Get the old image instance
         
-    def get(self,request,id):
-        blog=self.getBlog(id)
-        if(blog is None):
-            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer=BlogSerializer(blog)
-        return Response({"blog": serializer.data})
-    
-    def put(self,request,id):
-        blog=self.getBlog(id)
-        if(blog is None):
-            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
+        # Save the new data
+        updated_blog = serializer.save()  # Save and retrieve the updated instance
         
-        serializer = BlogSerializer(blog, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Blog updated successfully", "blog": serializer.data})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Delete the old image if it has been replaced
+        if old_image and old_image != updated_blog.image:
+            print(f"Deleting old image: {old_image.name}")  # Debug log
+            old_image.delete(save=False)  # Delete the old image from storage
+        else:
+            print("No image change detected or no old image to delete.")  # Debug log
+
+    def perform_destroy(self, instance):
+        if instance.image:
+            instance.image.delete(save=False)
+        instance.delete()
+
     
-    def delete(self,request,id):
-        blog=self.getBlog(id)
-        if(blog is None):
-            return Response({"error": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
-        blog.delete()
-        return Response({"message": "Blog deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
-   
+
     
   
