@@ -1,12 +1,12 @@
 from pathlib import Path
 import environ
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-
 
 
 # Quick-start development settings - unsuitable for production
@@ -33,19 +33,20 @@ INSTALLED_APPS = [
     # self created apps
     "blogapp",
     "userapp",
-
+    "commentapp",
+    "emailapp",
+    
     # third party apps
     "rest_framework",
     "django_filters",
     "drf_yasg",
     "silk",
-    'rest_framework_simplejwt',
+    "rest_framework_simplejwt",
 ]
 
 
-
 MIDDLEWARE = [
-    'silk.middleware.SilkyMiddleware',
+    "silk.middleware.SilkyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -53,7 +54,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
 ]
 
 SILKY_PYTHON_PROFILER = True
@@ -95,9 +95,6 @@ DATABASES = {
 }
 
 
-
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -134,8 +131,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-MEDIA_URL = '/media/'  # The URL prefix for media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # The local directory where files will be stored
+MEDIA_URL = "/media/"  # The URL prefix for media files
+MEDIA_ROOT = os.path.join(
+    BASE_DIR, "media"
+)  # The local directory where files will be stored
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -144,16 +143,33 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # Number of items per page
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,  # Number of items per page
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # Require authentication by default
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",  # Require authentication by default
     ],
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        hours=12
+    ),  # Increase to 12 hours or your desired duration
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=7
+    ),  # Increase to 7 days or your desired duration
+}
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Example for Gmail
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER =env("EMAIL_HOST_USER")  # Your email address
+EMAIL_HOST_PASSWORD =env("EMAIL_HOST_PASSWORD")  # Your email's app password (not your login password)
