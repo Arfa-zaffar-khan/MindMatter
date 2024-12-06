@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from .services import send_email_task
+
 
 class EmailSerializer(serializers.Serializer):
     recipient_email = serializers.EmailField()
@@ -9,9 +11,8 @@ class EmailSerializer(serializers.Serializer):
         from django.core.mail import send_mail
 
         validated_data = self.validated_data
-        send_mail(
-            subject=validated_data['subject'],
-            message=validated_data['message'],
-            from_email='your_email@gmail.com',  # Replace with your email
-            recipient_list=[validated_data['recipient_email']],
+        send_email_task.delay(
+            subject=validated_data["subject"],
+            message=validated_data["message"],
+            recipient_email=validated_data["recipient_email"],
         )

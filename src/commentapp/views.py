@@ -6,5 +6,5 @@ from .serializers import CommentSerializer
 
 # Create your views here.
 class CreateAndGetAllComments(ListCreateAPIView):
-    queryset = Comment.objects.select_related("user", "blog","comments")
+    queryset = Comment.objects.select_related("user", "blog", "comments")
     serializer_class = CommentSerializer
