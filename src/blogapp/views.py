@@ -9,8 +9,6 @@ from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
     ListAPIView,
-    CreateAPIView,
-    RetrieveAPIView,
 )
 from rest_framework.filters import OrderingFilter
 from django.core.cache import cache

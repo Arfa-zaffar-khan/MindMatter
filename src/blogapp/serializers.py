@@ -17,10 +17,10 @@ class CommentSerializer(serializers.ModelSerializer):
 class BlogSerializer(serializers.ModelSerializer):
     creator = UserSerializer(read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
-
+    likes_count= serializers.SerializerMethodField()
     class Meta:
         model = Blog
-        fields = ["id", "title", "description", "image", "creator", "comments"]
+        fields = ["id", "title", "description", "image", "creator", "comments","likes_count"]
         read_only_fields = ["id", "creator"]
 
     def create(self, validated_data):
@@ -29,3 +29,6 @@ class BlogSerializer(serializers.ModelSerializer):
         # Create a new blog and set the creator field to the current user
         blog = Blog.objects.create(creator=user, **validated_data)
         return blog
+    
+    def get_likes_count(self, obj):
+        return obj.likes.count()

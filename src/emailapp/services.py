@@ -12,6 +12,7 @@ def send_email_task(
         send_mail(
             subject=subject,
             message=message,
+            from_email="khanarfa8879@gmail.com",
             recipient_list=[recipient_email],
         )
         return f"Email sent to {recipient_email}"

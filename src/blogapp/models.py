@@ -13,3 +13,6 @@ class Blog(models.Model):
 
     class Meta:
         db_table = "blogs"
+
+    def __str__(self):
+        return self.title

@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 import redis
 from django.conf import settings
 import json
+from . import services
 
 
 # Redis client configuration
@@ -40,37 +41,36 @@ class RegisterUser(CreateAPIView):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
-    email = request.data.get("email")
-    otp_entered = request.data.get("otp")
+    email = request.data.get("email")  # Use request.data to access POST data
+    otp = request.data.get("otp")
 
-    if not email or not otp_entered:
-        raise ValidationError("Email and OTP are required")
+    if not email or not otp:
+        return Response(
+            {"message": "Email and OTP are required."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    # Check if the user data exists in Redis
-    user_data_json = r.get(f"user:{email}")
-    if not user_data_json:
-        raise ValidationError("OTP expired or invalid. Please request a new OTP.")
-
-    # Parse the JSON data
     try:
-        user_data = json.loads(user_data_json)
-    except json.JSONDecodeError:
-        raise ValidationError("Invalid data stored for the user. Please try again.")
+        user = services.verify_otp(email, otp)
+        return Response(
+            {"message": "User registered successfully!"}, 
+            status=status.HTTP_201_CREATED
+        )
+    except ValidationError as e:
+        return Response(
+            {"message": str(e)}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    # Validate OTP
-    if user_data["otp"] != otp_entered:
-        raise ValidationError("Invalid OTP. Please try again.")
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def resend_otp_to_email(request):
+    otp=services.resend_otp_to_email(request.data.get("email") )
+    return Response({"message": "we have sent you new otp please check"},status=status.HTTP_200_OK)
 
-    # If OTP is valid, create the user
-    user = User.objects.create_user(
-        username=user_data["username"],
-        email=user_data["email"],
-        password=user_data["password"],
-    )
 
-    # OTP is valid, so delete it from Redis
-    r.delete(f"user:{email}")
 
-    return Response(
-        {"message": "User registered successfully!"}, status=status.HTTP_201_CREATED
-    )
+
+
+
+    

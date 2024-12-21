@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "userapp",
     "commentapp",
     "emailapp",
+    "likeapp",
     # third party apps
     "rest_framework",
     "django_filters",

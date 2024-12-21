@@ -6,7 +6,6 @@ from blogapp.models import Blog
 
 class BlogSerializer(serializers.ModelSerializer):
     creator = UserSerializer(read_only=True)
-
     class Meta:
         model = Blog
         fields = ["id", "title", "description", "image", "creator"]
